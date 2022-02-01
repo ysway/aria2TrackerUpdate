@@ -16,26 +16,27 @@ def getTrackerList(updateUrl):
         return 'error'
 
 def atu(filePath, trackerList, fileData):
-    writeFlag= False
     # check if folder exists
     os.makedirs(os.path.dirname(filePath), exist_ok=True)
     # check if the file exists
     if os.path.exists(filePath):
-        # open the file
-        with open(filePath, 'r+') as f:
-            content = f.read()
-            # go to the line that start with 'bt-tracker='
-            content = content.split('\n')
-            for line in content:
-                if line.startswith('bt-tracker='):
-                    # replace the tracker url
-                    line = 'bt-tracker=' + trackerList
-                    # write the new line
-                    f.write(line + '\n')
-                    writeFlag = True
-                    break
-            if not writeFlag:
-                f.write('\n' + 'bt-tracker=' + trackerList)
+        # read the file
+        with open(filePath, 'r') as f:
+            fileData = f.read()
+            # save the reading result into fileData
+            f.close()
+        content = fileData.split('\n')
+        for line in content:
+            if line.startswith('bt-tracker='):
+                fileData = fileData.replace(line, '')
+            else:
+                pass
+        fileData = fileData + '\n' + 'bt-tracker=' + trackerList + '\n'
+        while '\n\n\n' in fileData:
+            fileData = fileData.replace('\n\n\n', '\n\n')
+        # write the file
+        with open(filePath, 'w') as f:
+            f.write(fileData)
             f.close()
     else:
         # create the file
@@ -71,6 +72,7 @@ def main(argument):
         return
     else:
         if ':' not in filePath and not \
+                      filePath.startswith('/') and not \
                       filePath.startswith('./') and not \
                       filePath.startswith('.\\') and not \
                       filePath.startswith('../') and not \
